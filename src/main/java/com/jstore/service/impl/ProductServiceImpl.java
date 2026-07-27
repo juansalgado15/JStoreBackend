@@ -8,6 +8,7 @@ import com.jstore.mapper.ProductMapper;
 import com.jstore.repository.ProductRepository;
 import com.jstore.service.interfaces.ProductService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,11 +25,6 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
 
-    /**
-     * Constructor para inyección de dependencias.
-     *
-     * @param productRepository repositorio de productos.
-     */
     public ProductServiceImpl(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
@@ -36,10 +32,9 @@ public class ProductServiceImpl implements ProductService {
 
     /**
      * Obtiene todos los productos registrados.
-     *
-     * @return lista de productos en formato DTO.
      */
     @Override
+    @Transactional(readOnly = true)
     public List<ProductResponseDTO> findAll() {
 
         return productRepository.findAll()
@@ -49,14 +44,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-
     /**
-     * Busca un producto por su identificador.
-     *
-     * @param id identificador del producto.
-     * @return producto encontrado.
+     * Busca un producto por identificador.
      */
     @Override
+    @Transactional(readOnly = true)
     public ProductResponseDTO findById(Long id) {
 
 
@@ -72,14 +64,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-
     /**
-     * Guarda un nuevo producto.
-     *
-     * @param request datos del producto.
-     * @return producto creado.
+     * Registra un nuevo producto.
      */
     @Override
+    @Transactional
     public ProductResponseDTO save(ProductRequestDTO request) {
 
 
@@ -100,18 +89,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-
     /**
      * Actualiza un producto existente.
-     *
-     * @param id identificador del producto.
-     * @param request nuevos datos.
-     * @return producto actualizado.
      */
     @Override
-    public ProductResponseDTO update(
-            Long id,
-            ProductRequestDTO request) {
+    @Transactional
+    public ProductResponseDTO update(Long id, ProductRequestDTO request) {
 
 
         Product existingProduct = productRepository.findById(id)
@@ -129,21 +112,18 @@ public class ProductServiceImpl implements ProductService {
         existingProduct.setActive(request.getActive());
 
 
-        Product updatedProduct =
-                productRepository.save(existingProduct);
+        Product updatedProduct = productRepository.save(existingProduct);
 
 
         return ProductMapper.toDTO(updatedProduct);
     }
 
 
-
     /**
-     * Elimina un producto existente.
-     *
-     * @param id identificador del producto.
+     * Elimina un producto.
      */
     @Override
+    @Transactional
     public void delete(Long id) {
 
 

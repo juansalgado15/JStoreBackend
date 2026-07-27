@@ -1,5 +1,7 @@
 package com.jstore.exception;
 
+import com.jstore.dto.error.ErrorResponseDTO;
+import com.jstore.dto.error.ValidationErrorResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -24,15 +26,16 @@ public class GlobalExceptionHandler {
      * Maneja recursos no encontrados.
      */
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(
+    public ResponseEntity<ErrorResponseDTO> handleResourceNotFound(
             ResourceNotFoundException exception) {
 
 
-        ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.NOT_FOUND.value(),
-                exception.getMessage()
-        );
+        ErrorResponseDTO error =
+                new ErrorResponseDTO(
+                        LocalDateTime.now(),
+                        HttpStatus.NOT_FOUND.value(),
+                        exception.getMessage()
+                );
 
 
         return ResponseEntity
@@ -41,12 +44,11 @@ public class GlobalExceptionHandler {
     }
 
 
-
     /**
-     * Maneja errores de validación de DTO.
+     * Maneja errores de validación de los DTO.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrorResponse> handleValidationErrors(
+    public ResponseEntity<ValidationErrorResponseDTO> handleValidationErrors(
             MethodArgumentNotValidException exception) {
 
 
@@ -63,8 +65,8 @@ public class GlobalExceptionHandler {
                 );
 
 
-        ValidationErrorResponse response =
-                new ValidationErrorResponse(
+        ValidationErrorResponseDTO response =
+                new ValidationErrorResponseDTO(
                         LocalDateTime.now(),
                         HttpStatus.BAD_REQUEST.value(),
                         errors
@@ -74,52 +76,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
-    }
-
-
-
-    /**
-     * Maneja errores inesperados.
-     */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(
-            Exception exception) {
-
-
-        ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Error interno del servidor."
-        );
-
-
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(error);
-    }
-
-
-
-    /**
-     * Respuesta estándar de error.
-     */
-    public record ErrorResponse(
-            LocalDateTime timestamp,
-            int status,
-            String message
-    ) {
-    }
-
-
-
-    /**
-     * Respuesta para errores de validación.
-     */
-    public record ValidationErrorResponse(
-            LocalDateTime timestamp,
-            int status,
-            Map<String,String> errors
-    ) {
     }
 
 }
