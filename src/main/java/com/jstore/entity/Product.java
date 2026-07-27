@@ -65,4 +65,12 @@ public class Product {
      */
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    /**
+     * Asigna automáticamente la fecha de creación antes de guardar.
+     */
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 }
