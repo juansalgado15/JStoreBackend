@@ -1,24 +1,24 @@
 package com.jstore.service.interfaces;
 
-import com.jstore.entity.Product;
+import com.jstore.dto.request.ProductRequestDTO;
+import com.jstore.dto.response.ProductResponseDTO;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Define las operaciones de negocio para la gestión de productos.
  *
  * @author Juan Salgado
- * @version 0.1.0
+ * @version 1.0
  */
 public interface ProductService {
 
     /**
-     * Obtiene la lista de todos los productos.
+     * Obtiene todos los productos registrados.
      *
      * @return lista de productos.
      */
-    List<Product> findAll();
+    List<ProductResponseDTO> findAll();
 
     /**
      * Busca un producto por su identificador.
@@ -26,27 +26,27 @@ public interface ProductService {
      * @param id identificador del producto.
      * @return producto encontrado.
      */
-    Optional<Product> findById(Long id);
+    ProductResponseDTO findById(Long id);
 
     /**
      * Registra un nuevo producto.
      *
-     * @param product producto a guardar.
-     * @return producto registrado.
+     * @param request datos del producto.
+     * @return producto creado.
      */
-    Product save(Product product);
+    ProductResponseDTO save(ProductRequestDTO request);
 
     /**
      * Actualiza un producto existente.
      *
      * @param id identificador del producto.
-     * @param product datos actualizados.
+     * @param request nuevos datos.
      * @return producto actualizado.
      */
-    Product update(Long id, Product product);
+    ProductResponseDTO update(Long id, ProductRequestDTO request);
 
     /**
-     * Elimina un producto por su identificador.
+     * Elimina un producto.
      *
      * @param id identificador del producto.
      */

@@ -1,18 +1,20 @@
 package com.jstore.service.impl;
 
+import com.jstore.dto.request.ProductRequestDTO;
+import com.jstore.dto.response.ProductResponseDTO;
 import com.jstore.entity.Product;
 import com.jstore.repository.ProductRepository;
 import com.jstore.service.interfaces.ProductService;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Implementación de la lógica de negocio para la gestión de productos.
  *
  * @author Juan Salgado
- * @version 0.1.0
+ * @version 1.0
  */
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -28,38 +30,124 @@ public class ProductServiceImpl implements ProductService {
         this.productRepository = productRepository;
     }
 
+
+    /**
+     * Obtiene todos los productos.
+     *
+     * @return lista de productos.
+     */
     @Override
-    public List<Product> findAll() {
-        return productRepository.findAll();
+    public List<ProductResponseDTO> findAll() {
+
+        return productRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
     }
 
+
+    /**
+     * Busca un producto por ID.
+     *
+     * @param id identificador del producto.
+     * @return producto encontrado.
+     */
     @Override
-    public Optional<Product> findById(Long id) {
-        return productRepository.findById(id);
+    public ProductResponseDTO findById(Long id) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Producto no encontrado."));
+
+        return mapToDTO(product);
     }
 
+
+    /**
+     * Registra un producto nuevo.
+     *
+     * @param request datos del producto.
+     * @return producto creado.
+     */
     @Override
-    public Product save(Product product) {
-        return productRepository.save(product);
+    public ProductResponseDTO save(ProductRequestDTO request) {
+
+        Product product = mapToEntity(request);
+
+        Product savedProduct = productRepository.save(product);
+
+        return mapToDTO(savedProduct);
     }
 
+
+    /**
+     * Actualiza un producto existente.
+     *
+     * @param id identificador del producto.
+     * @param request nuevos datos.
+     * @return producto actualizado.
+     */
     @Override
-    public Product update(Long id, Product product) {
+    public ProductResponseDTO update(Long id, ProductRequestDTO request) {
 
         Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado."));
+                .orElseThrow(() ->
+                        new RuntimeException("Producto no encontrado."));
 
-        existingProduct.setName(product.getName());
-        existingProduct.setDescription(product.getDescription());
-        existingProduct.setPrice(product.getPrice());
-        existingProduct.setStock(product.getStock());
-        existingProduct.setActive(product.getActive());
+        existingProduct.setName(request.getName());
+        existingProduct.setDescription(request.getDescription());
+        existingProduct.setPrice(request.getPrice());
+        existingProduct.setStock(request.getStock());
+        existingProduct.setActive(request.getActive());
 
-        return productRepository.save(existingProduct);
+        Product updatedProduct = productRepository.save(existingProduct);
+
+        return mapToDTO(updatedProduct);
     }
 
+
+    /**
+     * Elimina un producto por ID.
+     *
+     * @param id identificador del producto.
+     */
     @Override
     public void delete(Long id) {
+
         productRepository.deleteById(id);
+    }
+
+
+    /**
+     * Convierte un DTO de entrada a entidad.
+     */
+    private Product mapToEntity(ProductRequestDTO request) {
+
+        Product product = new Product();
+
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+        product.setStock(request.getStock());
+        product.setActive(request.getActive());
+
+        return product;
+    }
+
+
+    /**
+     * Convierte una entidad a DTO de respuesta.
+     */
+    private ProductResponseDTO mapToDTO(Product product) {
+
+        return ProductResponseDTO.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .active(product.getActive())
+                .createdAt(product.getCreatedAt())
+                .build();
     }
 }
