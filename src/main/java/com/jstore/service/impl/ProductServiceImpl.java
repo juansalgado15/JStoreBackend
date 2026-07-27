@@ -3,15 +3,16 @@ package com.jstore.service.impl;
 import com.jstore.dto.request.ProductRequestDTO;
 import com.jstore.dto.response.ProductResponseDTO;
 import com.jstore.entity.Product;
+import com.jstore.exception.ResourceNotFoundException;
+import com.jstore.mapper.ProductMapper;
 import com.jstore.repository.ProductRepository;
 import com.jstore.service.interfaces.ProductService;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
- * Implementación de la lógica de negocio para la gestión de productos.
+ * Implementación de la lógica de negocio para productos.
  *
  * @author Juan Salgado
  * @version 1.0
@@ -19,10 +20,12 @@ import java.util.List;
 @Service
 public class ProductServiceImpl implements ProductService {
 
+
     private final ProductRepository productRepository;
 
+
     /**
-     * Constructor para la inyección de dependencias.
+     * Constructor para inyección de dependencias.
      *
      * @param productRepository repositorio de productos.
      */
@@ -32,22 +35,23 @@ public class ProductServiceImpl implements ProductService {
 
 
     /**
-     * Obtiene todos los productos.
+     * Obtiene todos los productos registrados.
      *
-     * @return lista de productos.
+     * @return lista de productos en formato DTO.
      */
     @Override
     public List<ProductResponseDTO> findAll() {
 
         return productRepository.findAll()
                 .stream()
-                .map(this::mapToDTO)
+                .map(ProductMapper::toDTO)
                 .toList();
     }
 
 
+
     /**
-     * Busca un producto por ID.
+     * Busca un producto por su identificador.
      *
      * @param id identificador del producto.
      * @return producto encontrado.
@@ -55,16 +59,22 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponseDTO findById(Long id) {
 
+
         Product product = productRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Producto no encontrado."));
+                        new ResourceNotFoundException(
+                                "Producto no encontrado con id: " + id
+                        )
+                );
 
-        return mapToDTO(product);
+
+        return ProductMapper.toDTO(product);
     }
 
 
+
     /**
-     * Registra un producto nuevo.
+     * Guarda un nuevo producto.
      *
      * @param request datos del producto.
      * @return producto creado.
@@ -72,12 +82,23 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponseDTO save(ProductRequestDTO request) {
 
-        Product product = mapToEntity(request);
+
+        Product product = new Product();
+
+
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+        product.setStock(request.getStock());
+        product.setActive(request.getActive());
+
 
         Product savedProduct = productRepository.save(product);
 
-        return mapToDTO(savedProduct);
+
+        return ProductMapper.toDTO(savedProduct);
     }
+
 
 
     /**
@@ -88,11 +109,18 @@ public class ProductServiceImpl implements ProductService {
      * @return producto actualizado.
      */
     @Override
-    public ProductResponseDTO update(Long id, ProductRequestDTO request) {
+    public ProductResponseDTO update(
+            Long id,
+            ProductRequestDTO request) {
+
 
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Producto no encontrado."));
+                        new ResourceNotFoundException(
+                                "Producto no encontrado con id: " + id
+                        )
+                );
+
 
         existingProduct.setName(request.getName());
         existingProduct.setDescription(request.getDescription());
@@ -100,54 +128,34 @@ public class ProductServiceImpl implements ProductService {
         existingProduct.setStock(request.getStock());
         existingProduct.setActive(request.getActive());
 
-        Product updatedProduct = productRepository.save(existingProduct);
 
-        return mapToDTO(updatedProduct);
+        Product updatedProduct =
+                productRepository.save(existingProduct);
+
+
+        return ProductMapper.toDTO(updatedProduct);
     }
 
 
+
     /**
-     * Elimina un producto por ID.
+     * Elimina un producto existente.
      *
      * @param id identificador del producto.
      */
     @Override
     public void delete(Long id) {
 
-        productRepository.deleteById(id);
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Producto no encontrado con id: " + id
+                        )
+                );
+
+
+        productRepository.delete(product);
     }
 
-
-    /**
-     * Convierte un DTO de entrada a entidad.
-     */
-    private Product mapToEntity(ProductRequestDTO request) {
-
-        Product product = new Product();
-
-        product.setName(request.getName());
-        product.setDescription(request.getDescription());
-        product.setPrice(request.getPrice());
-        product.setStock(request.getStock());
-        product.setActive(request.getActive());
-
-        return product;
-    }
-
-
-    /**
-     * Convierte una entidad a DTO de respuesta.
-     */
-    private ProductResponseDTO mapToDTO(Product product) {
-
-        return ProductResponseDTO.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .description(product.getDescription())
-                .price(product.getPrice())
-                .stock(product.getStock())
-                .active(product.getActive())
-                .createdAt(product.getCreatedAt())
-                .build();
-    }
 }

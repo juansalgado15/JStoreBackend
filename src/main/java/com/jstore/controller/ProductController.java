@@ -3,9 +3,7 @@ package com.jstore.controller;
 import com.jstore.dto.request.ProductRequestDTO;
 import com.jstore.dto.response.ProductResponseDTO;
 import com.jstore.service.interfaces.ProductService;
-
 import jakarta.validation.Valid;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +25,6 @@ public class ProductController {
     private final ProductService productService;
 
 
-    /**
-     * Constructor para inyección de dependencia.
-     *
-     * @param productService servicio de productos.
-     */
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
@@ -39,76 +32,71 @@ public class ProductController {
 
     /**
      * Obtiene todos los productos.
-     *
-     * @return lista de productos.
      */
     @GetMapping
     public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
 
-        return ResponseEntity.ok(productService.findAll());
+        return ResponseEntity.ok(
+                productService.findAll()
+        );
     }
 
 
     /**
-     * Obtiene un producto por su ID.
-     *
-     * @param id identificador del producto.
-     * @return producto encontrado.
+     * Obtiene un producto por ID.
      */
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getProductById(
             @PathVariable Long id) {
 
-        return ResponseEntity.ok(productService.findById(id));
+        return ResponseEntity.ok(
+                productService.findById(id)
+        );
     }
 
 
     /**
-     * Registra un nuevo producto.
-     *
-     * @param request datos del producto.
-     * @return producto creado.
+     * Crea un producto.
      */
     @PostMapping
     public ResponseEntity<ProductResponseDTO> createProduct(
             @Valid @RequestBody ProductRequestDTO request) {
 
-        ProductResponseDTO savedProduct =
+
+        ProductResponseDTO response =
                 productService.save(request);
+
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(savedProduct);
+                .body(response);
     }
 
 
     /**
-     * Actualiza un producto existente.
-     *
-     * @param id identificador del producto.
-     * @param request nuevos datos.
-     * @return producto actualizado.
+     * Actualiza un producto.
      */
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody ProductRequestDTO request) {
 
-        ProductResponseDTO updatedProduct =
+
+        ProductResponseDTO response =
                 productService.update(id, request);
 
-        return ResponseEntity.ok(updatedProduct);
+
+        return ResponseEntity.ok(response);
     }
 
 
     /**
      * Elimina un producto.
-     *
-     * @param id identificador del producto.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(
             @PathVariable Long id) {
+
 
         productService.delete(id);
 
